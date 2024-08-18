@@ -7,14 +7,9 @@
 	<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/ScrollTrigger.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.4/lottie.min.js"></script>
 	<style>
 		body {
-			margin: 0;
-			font-family: Arial, sans-serif;
-			height: 200vh; /* Увеличиваем высоту для большего пространства скролла */
-			display: flex;
-			justify-content: center;
-			align-items: center;
 		}
 		model-viewer {
 			width: 100%;
@@ -27,7 +22,16 @@
 </head>
 <body>
 
-<model-viewer id="viewer" src="./phone/scene.gltf" alt="A 3D model"></model-viewer>
+<div style="height: 200vh; display:flex; align-items: center; justify-content: center">
+	<div id="lottie-animation" style="width: 300px; height: 300px;"></div>
+</div>
+
+
+<div style="height: 200vh; display:flex; align-items: center; justify-content: center">
+	<model-viewer id="viewer" src="./phone/scene.gltf" alt="A 3D model"></model-viewer>
+</div>
+
+
 
 <script>
 	const modelViewer = document.querySelector('#viewer');
@@ -61,6 +65,35 @@
 		},
 		id: "scroll-animation"
 	});
+</script>
+
+	<script>
+		const animation = lottie.loadAnimation({
+			container: document.getElementById('lottie-animation'), // указание контейнера
+			renderer: 'svg', // рендерер (svg, canvas, html)
+			loop: false, // Отключаем зацикливание
+			autoplay: false, // Отключаем автоматический старт
+			path: './data.json' // путь к вашему .json файлу
+		});
+
+		animation.addEventListener('DOMLoaded', () => {
+			// Используем GSAP и ScrollTrigger для управления анимацией по скроллу
+			gsap.to({}, {
+				scrollTrigger: {
+					trigger: "#lottie-animation",
+					start: "0px center",
+					end: "400px top",
+					scrub: true,
+					markers: true, // Удалите это, если маркеры не нужны
+					onUpdate: (self) => {
+						// Управляем прогрессом анимации вручную в зависимости от скролла
+						const progress = self.progress; // Прогресс от 0 до 1
+						const frame = progress * animation.totalFrames;
+						animation.goToAndStop(frame, true); // Обновляем текущий кадр анимации
+					}
+				}
+			});
+		});
 </script>
 
 </body>
