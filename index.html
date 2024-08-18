@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>3D Model Scroll Animation</title>
+	<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/ScrollTrigger.min.js"></script>
+	<style>
+		body {
+			margin: 0;
+			font-family: Arial, sans-serif;
+			height: 200vh; /* Увеличиваем высоту для большего пространства скролла */
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		model-viewer {
+			width: 100%;
+			max-width: 600px;
+			height: 500px;
+			transition: all 0.3s;
+			transform-origin: center center; /* Центрируем трансформации */
+		}
+	</style>
+</head>
+<body>
+
+<model-viewer id="viewer" src="./phone/scene.gltf" alt="A 3D model"></model-viewer>
+
+<script>
+	const modelViewer = document.querySelector('#viewer');
+
+	// Начальная позиция модели (как на изображении)
+	modelViewer.setAttribute('camera-orbit', `0deg 220deg 0deg`);
+	// Настройка анимации при скролле
+	gsap.to(modelViewer, {
+		scrollTrigger: {
+			trigger: modelViewer,
+			start: "220px bottom",
+			end: "top top",
+			scrub: true,
+			// markers: true, // Удалите это, если маркеры не нужны
+		},
+		ease: "power2.out", // Добавляем более мягкое easing
+		onUpdate: function (self) {
+			// Рассчитываем вращение модели по оси Y на основе прогресса скролла
+			const scrollProgress = ScrollTrigger.getById("scroll-animation").progress
+			const rotationY = 220 - (scrollProgress * 140); // Вращаем от 220deg до 80deg (лицо на пользователя)
+			modelViewer.setAttribute('camera-orbit', `0deg ${rotationY}deg 0deg`);
+
+			// После разворота (вторая половина скролла) перемещаем модель
+			if (scrollProgress > 0.5) {
+				const moveProgress = gsap.utils.interpolate(0, 1, (scrollProgress - 0.5) * 2); // Нормализуем прогресс от 0 до 1
+				modelViewer.style.transform = `translateX(${-moveProgress * 200}px) translateY(${moveProgress * 200}px) scale(1.5)`;
+			} else {
+				// Возвращаем модель на исходную позицию, если скролл меньше половины
+				modelViewer.style.transform = `translateX(0) translateY(0) scale(1.5)`;
+			}
+		},
+		id: "scroll-animation"
+	});
+</script>
+
+</body>
+</html>
